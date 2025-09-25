@@ -113,6 +113,10 @@ data["book", "rev_rates", "user"].edge_attr = edge_attr
 
 os.makedirs(output_dir, exist_ok=True)
 torch.save(data, os.path.join(output_dir, "graph.pt"))
+with open(os.path.join(output_dir, "user_tokenizer.json"), "w") as f:
+    json.dump(user2idx, f, indent=2)
+with open(os.path.join(output_dir, "book_tokenizer.json"), "w") as f:
+    json.dump(book2idx, f, indent=2)
 with open(os.path.join(output_dir, "author_encoder.json"), "w") as f:
     json.dump(author2idx, f, indent=2)
 with open(os.path.join(output_dir, "publisher_encoder.json"), "w") as f:
