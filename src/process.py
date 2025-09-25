@@ -104,8 +104,8 @@ data["user", "rates", "book"].edge_index = edge_index
 data["user", "rates", "book"].edge_attr = edge_attr
 
 # Book to User edge
-data["book", "rev_rates", "book"].edge_index = edge_index.flip(0)
-data["book", "rev_rates", "book"].edge_attr = edge_attr
+data["book", "rev_rates", "user"].edge_index = edge_index.flip(0)
+data["book", "rev_rates", "user"].edge_attr = edge_attr
 
 # --------------------------------------
 # Saving the Graph and Feature Encoders
