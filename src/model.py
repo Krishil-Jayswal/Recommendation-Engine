@@ -1,5 +1,5 @@
 from torch import nn
-from torch_geometric.nn import GCNConv, HeteroConv
+from torch_geometric.nn import SAGEConv, HeteroConv
 from torch_geometric.data import HeteroData
 from torchinfo import summary
 
@@ -19,10 +19,11 @@ class ConvLayer(nn.Module):
     """
     def __init__(self, hidden_dim: int, dropout):
         super().__init__()
+        conv = SAGEConv(hidden_dim, hidden_dim)
         self.conv = HeteroConv({
-            ("user", "rates", "book"): GCNConv(hidden_dim, hidden_dim, add_self_loops=False),
-            ("book", "rev_rates", "user"): GCNConv(hidden_dim, hidden_dim, add_self_loops=False)
-        })
+            ("user", "rates", "book"): conv,
+            ("book", "rev_rates", "user"): conv
+        }, aggr='sum')
         self.act = nn.ReLU()
         self.dropout = nn.Dropout(dropout)
 
@@ -50,7 +51,7 @@ class Recommender(nn.Module):
         self.book_norm = nn.LayerNorm(dim_dict["hidden"])
 
     def forward(self, data: HeteroData):
-        x_dict = {ntype: data[ntype] for ntype in data.node_types}
+        x_dict = {ntype: data[ntype].x for ntype in data.node_types}
         x_dict["user"] = self.user_proj(x_dict["user"])
         x_dict["book"] = self.book_proj(x_dict["book"])
 
