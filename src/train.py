@@ -7,6 +7,7 @@ from torch_geometric.transforms import RandomLinkSplit
 from torch_geometric.loader import LinkNeighborLoader
 from torch_geometric.utils import negative_sampling
 from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 # ==============================
 # Config
@@ -19,7 +20,7 @@ logs_dir = os.path.join(os.getcwd(), "logs")
 os.makedirs(models_dir, exist_ok=True)
 os.makedirs(logs_dir, exist_ok=True)
 
-epochs = 10
+epochs = 20
 batch_size = 4096
 lr = 1e-3
 weight_decay = 1e-5
@@ -65,11 +66,13 @@ dim_dict = {
 
 model = Recommender(dim_dict).to(device)
 optimizer = Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+writer = SummaryWriter(logs_dir)
 
 # ==============================
 # Training Loop
 # ==============================
 
+global_step = 0
 for epoch in range(1, epochs+1):
     model.train()
     total_loss = 0
@@ -98,9 +101,16 @@ for epoch in range(1, epochs+1):
         optimizer.step()
 
         total_loss += loss.item()
+        global_step += 1
+
         pbar.set_postfix({"batch_loss": loss.item()})
+        writer.add_scalar("Loss/Batch", loss.item(), global_step)
+
     avg_loss = total_loss/len(train_loader)
     print(f"Epoch: {epoch} | Loss: {avg_loss:.4f}")
 
+    writer.add_scalar("Loss/Epoch", avg_loss, epoch)
+
     if epoch%save_epoch == 0:
         torch.save(model.state_dict(), os.path.join(models_dir, f"recommender_{epoch:02}.pt"))
+        print(f"Checkpoint saved for epoch: {epoch}.")
