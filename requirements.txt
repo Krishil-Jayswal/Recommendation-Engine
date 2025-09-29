@@ -1,0 +1,8 @@
+torch
+torch_geometric
+torchinfo
+numpy
+pandas
+sentence_transformers
+tqdm
+tensorboard
